@@ -28,7 +28,7 @@ import { PaginationOptions } from 'src/core/models/paginationOptions';
 @ApiTags('role')
 @Controller('role')
 export class RoleController {
-  constructor(private readonly roleService: RoleService) { }
+  constructor(private readonly roleService: RoleService) {}
 
   @Post()
   @ApiOkResponse({ description: 'Rol creado', type: CreateRoleDto })
@@ -63,13 +63,16 @@ export class RoleController {
   })
   @ApiOperation({ summary: 'Encontrar un rol por su ID' })
   findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.roleService.findRoleWithPermissions(+id);
+    return this.roleService.findOne(+id);
   }
 
   @Put(':id')
   @ApiOkResponse({ type: CreateRoleDto, description: 'Rol actualizado' })
   @ApiOperation({ summary: 'Actualizar un rol por su ID' })
-  update(@Param('id', ParseIntPipe) id: string, @Body() updateRoleDto: UpdateRoleDto) {
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateRoleDto: UpdateRoleDto,
+  ) {
     return this.roleService.update(+id, updateRoleDto);
   }
 

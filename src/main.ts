@@ -11,8 +11,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('/api');
   const configSwagger = new DocumentBuilder()
-    .setTitle('Api Rest Complexivo')
-    .setDescription('Api rest para el manejo de complejidad del sistema para el modulo de alumons y convenios.')
+    .setTitle('Api Rest Ecommerce ')
+    .setDescription('Api rest ecommerce`s manage.')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

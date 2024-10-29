@@ -10,214 +10,128 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// schema ecommerce`s database
 model User {
-  id                  Int      @id @default(autoincrement())
-  dni                 String   @unique
-  userName            String   @unique
-  email               String   @unique
-  password            String
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  state               Boolean  @default(true)
-  idRol               Int      @default(1)
-  rol                 Rol      @relation(fields: [idRol], references: [id])
-  coordinator         Career?  @relation("coordinator")
-  vicecoordinator     Career?  @relation("vicecoordinator")
-  responsableStepDual Career?  @relation("responsableStepDual")
-  student             Student?
-  company             Company?
-  tutor               Tutor?
+  id        Int       @id @default(autoincrement())
+  dni       String    @unique
+  name      String
+  lastName  String
+  email     String    @unique
+  password  String
+  phone     String
+  company   String?
+  status    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Role      Role      @relation(fields: [roleId], references: [id])
+  roleId    Int
+  Address   Address[]
+  Review    Review[]
+  Order     Order[]
+  Payment   Payment[]
 }
 
-model Rol {
-  id               Int                @id @default(autoincrement())
-  code             String?            @unique
-  name             String             @unique
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  state            Boolean            @default(true)
-  users            User[]
-  rolHasPermission RolHasPermission[]
+model Role {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    Boolean  @default(true)
+  user      User[]
 }
 
-model Permission {
-  id               Int                @id @default(autoincrement())
-  name             String             @unique
-  endpoint         String
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  state            Boolean            @default(true)
-  rolHasPermission RolHasPermission[]
+model Product {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique @default(uuid())
+  name        String
+  description String
+  images      String[]
+  tags        String[]
+  stock       Int
+  price       Float
+  priceSale   Float
+  isSale      Boolean
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id])
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Review      Review[]
+  Order       Order[]
 }
 
-model RolHasPermission {
-  idRol        Int
-  idPermission Int
-  rol          Rol        @relation(fields: [idRol], references: [id])
-  permission   Permission @relation(fields: [idPermission], references: [id])
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  state        Boolean    @default(true)
-
-  @@id([idRol, idPermission])
+model Order {
+  id        String      @id @default(cuid())
+  userId    Int
+  user      User        @relation(fields: [userId], references: [id])
+  productId Int
+  product   Product     @relation(fields: [productId], references: [id])
+  quantity  Int
+  status    OrderStatus
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  Payment   Payment[]
 }
 
-model Tutor {
-  id             Int       @id @default(autoincrement())
-  dni            String    @unique
-  firstName      String
-  lastName       String
-  email          String    @unique
-  isAcademic     Boolean   @default(true)
-  idUser         Int       @unique
-  user           User      @relation(fields: [idUser], references: [id])
-  idCareer       Int?
-  career         Career?   @relation(fields: [idCareer], references: [id])
-  idCompany      Int?
-  company        Company?  @relation(fields: [idCompany], references: [id])
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  state          Boolean   @default(true)
-  project        Project[] @relation("academicTutor")
-  projectCompany Project[] @relation("bussinesTutor")
+model Review {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Company {
-  id                       Int                        @id @default(autoincrement())
-  ruc                      String                     @unique
-  name                     String                     @unique
-  dniRepresentLegal        String                     @unique
-  nameRepresentLegal       String
-  lastNameRepresentLegal   String
-  phone                    String
-  email                    String                     @unique
-  address                  String
-  createdAt                DateTime                   @default(now())
-  updatedAt                DateTime                   @updatedAt
-  state                    Boolean                    @default(true)
-  status                   StatusCompany              @default(PENDIENTE)
-  tutor                    Tutor[]
-  idCareer                 Int
-  career                   Career                     @relation(fields: [idCareer], references: [id])
-  project                  Project[]
-  agreement                Agreement[]
-  idUser                   Int                        @unique
-  user                     User                       @relation(fields: [idUser], references: [id])
-  studentAssignedToCompany StudentAssignedToCompany[]
+model Address {
+  id        Int      @id @default(autoincrement())
+  street    String
+  city      String
+  state     String
+  zip       String
+  reference String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Career {
-  id                      Int       @id @default(autoincrement())
-  code                    String    @unique
-  name                    String
-  dateStart               DateTime
-  dateEnd                 DateTime
-  timeRenovationAgreement Int
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-  state                   Boolean   @default(true)
-  idCoordinator           Int       @unique
-  coordinator             User      @relation("coordinator", fields: [idCoordinator], references: [id])
-  idViceCoordinator       Int       @unique
-  viceCoordinator         User      @relation("vicecoordinator", fields: [idViceCoordinator], references: [id])
-  idRespStepDual          Int       @unique
-  respStepDual            User      @relation("responsableStepDual", fields: [idRespStepDual], references: [id])
-  company                 Company[]
-  student                 Student[]
-  tutor                   Tutor[]
+model Payment {
+  id            String   @id @default(cuid())
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id])
+  tokenPayPhone String
+  amount        Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
-model Student {
-  id                       Int                        @id @default(autoincrement())
-  typeDni                  TypeDNI                    @default(CEDULA)
-  dni                      String                     @unique
-  firstName                String
-  secondName               String?
-  lastName                 String
-  secondLastName           String?
-  email                    String                     @unique
-  idUser                   Int                        @unique
-  user                     User                       @relation(fields: [idUser], references: [id])
-  createdAt                DateTime                   @default(now())
-  updatedAt                DateTime                   @updatedAt
-  state                    Boolean                    @default(true)
-  status                   StatusStudent              @default(APROBADO)
-  idCareer                 Int
-  career                   Career                     @relation(fields: [idCareer], references: [id])
-  studentAssignedToCompany StudentAssignedToCompany[]
+model Category {
+  id          Int           @id @default(autoincrement())
+  name        String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  status      Boolean       @default(true)
+  SubCategory SubCategory[]
+  Product     Product[]
 }
 
-model Project {
-  id                       Int                        @id @default(autoincrement())
-  name                     String
-  description              String
-  createdAt                DateTime                   @default(now())
-  updatedAt                DateTime                   @updatedAt
-  state                    Boolean                    @default(true)
-  status                   StatusProject              @default(PENDIENTE)
-  idAcademicTutor          Int?
-  academicTutor            Tutor?                      @relation("academicTutor", fields: [idAcademicTutor], references: [id])
-  idBusinessTutor          Int
-  businessTutor            Tutor                      @relation("bussinesTutor", fields: [idBusinessTutor], references: [id])
-  idCompany                Int
-  company                  Company                    @relation(fields: [idCompany], references: [id])
-  studentAssignedToCompany StudentAssignedToCompany[]
+model SubCategory {
+  id         String   @id @default(cuid())
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  name       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  status     Boolean  @default(true)
 }
 
-model StudentAssignedToCompany {
-  id             Int      @id @default(autoincrement())
-  idStudent      Int
-  student        Student? @relation(fields: [idStudent], references: [id])
-  idCompany      Int?
-  company        Company? @relation(fields: [idCompany], references: [id])
-  idProject      Int?
-  project        Project? @relation(fields: [idProject], references: [id])
-  electivePeriod String
-  academicPeriod String
-  parallel       String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  state          Boolean  @default(true)
-}
-
-model Agreement {
-  id            Int           @id @default(autoincrement())
-  code          String        @unique
-  dateStart     DateTime
-  dateEnd       DateTime
-  itvPath       String
-  agreementPath String
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  state         Boolean       @default(true)
-  status        StatusProject @default(PENDIENTE)
-  idCompany     Int
-  company       Company       @relation(fields: [idCompany], references: [id])
-}
-
-enum TypeDNI {
-  CEDULA
-  RUC
-  PASAPORTE
-}
-
-enum StatusCompany {
-  PENDIENTE
-  APROBADA
-  RECHAZADA
-  RETIRADA
-  ACTIVO
-}
-
-enum StatusStudent {
-  ASIGNADO
-  APROBADO
-  RETIRADO
-  REPROBADO
-}
-
-enum StatusProject {
-  PENDIENTE
-  ACTIVO
-  INACTIVO
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELED
 }

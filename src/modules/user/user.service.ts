@@ -18,7 +18,7 @@ import { PaginationOptions } from 'src/core/models/paginationOptions';
 @Injectable()
 export class UserService {
   private logger = new Logger(UserService.name);
-  constructor(private _prismaService: PrismaService) { }
+  constructor(private _prismaService: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<User | null> {
     const { dni, email } = createUserDto;
@@ -63,35 +63,42 @@ export class UserService {
 
   async findAll(
     options: PaginationOptions,
-    allActive?: boolean
+    allActive?: boolean,
   ): Promise<PaginationResult<UserDto>> {
     try {
       const { page, limit } = options;
 
-      const hasFilter = !!options.name || !!options.identification || !!options.email;
+      const hasFilter =
+        !!options.name || !!options.identification || !!options.email;
 
       const users = await this._prismaService.user.findMany({
         where: {
-          state: allActive ? true : undefined,
-          userName: hasFilter ? {
-            contains: options.name,
-            mode: Prisma.QueryMode.insensitive,
-          } : undefined,
-          dni: hasFilter ? {
-            contains: options.identification,
-            mode: Prisma.QueryMode.insensitive,
-          } : undefined,
-          email: hasFilter ? {
-            contains: options.email,
-            mode: Prisma.QueryMode.insensitive,
-          } : undefined,
+          status: allActive ? true : undefined,
+          name: hasFilter
+            ? {
+                contains: options.name,
+                mode: Prisma.QueryMode.insensitive,
+              }
+            : undefined,
+          dni: hasFilter
+            ? {
+                contains: options.identification,
+                mode: Prisma.QueryMode.insensitive,
+              }
+            : undefined,
+          email: hasFilter
+            ? {
+                contains: options.email,
+                mode: Prisma.QueryMode.insensitive,
+              }
+            : undefined,
         },
         include: {
-          rol: {
+          Role: {
             select: {
               name: true,
-            }
-          }
+            },
+          },
         },
         orderBy: {
           createdAt: Prisma.SortOrder.desc,
@@ -100,24 +107,27 @@ export class UserService {
         skip: hasFilter ? undefined : page,
       });
 
-
-      if (!users) throw new HttpException('No se encontraron usuarios', HttpStatus.NO_CONTENT);
+      if (!users)
+        throw new HttpException(
+          'No se encontraron usuarios',
+          HttpStatus.NO_CONTENT,
+        );
       return {
         results: users.map((user) => {
           delete user.password;
           return {
             id: user.id,
             dni: user.dni,
-            userName: user.userName,
+            completeName: `${user.name} ${user.lastName}`,
             email: user.email,
-            state: user.state,
-            role: user.rol.name,
+            status: user.status,
+            role: user.Role.name,
           };
         }),
         total: await this._prismaService.user.count({
           where: {
-            state: allActive ? true : undefined,
-          }
+            status: allActive ? true : undefined,
+          },
         }),
         page,
         limit,
@@ -136,76 +146,21 @@ export class UserService {
         select: {
           id: true,
           dni: true,
-          userName: true,
+          name: true,
           email: true,
-          rol: {
+          Role: {
             select: {
               id: true,
               name: true,
-              code: true,
-            }
+            },
           },
-          student: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              status: true,
-              career: {
-                select: {
-                  id: true,
-                  code: true,
-                  name: true,
-                }
-              }
-            }
-          },
-          tutor: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              career: {
-                select: {
-                  id: true,
-                  name: true,
-                  code: true,
-                }
-              },
-              company: {
-                select: {
-                  id: true,
-                  name: true,
-                  status: true,
-                  career: {
-                    select: {
-                      id: true,
-                      code: true,
-                      name: true,
-                    }
-                  }
-                }
-              }
-            }
-          },
-          company: {
-            select: {
-              id: true,
-              name: true,
-              ruc: true,
-              status: true,
-              career: {
-                select: {
-                  id: true,
-                  code: true,
-                  name: true,
-                }
-              }
-            }
-          }
-        }
+          company: true,
+          status: true,
+          Address: true,
+        },
       });
-      if (!user) throw new HttpException('El usuario no existe', HttpStatus.NOT_FOUND);
+      if (!user)
+        throw new HttpException('El usuario no existe', HttpStatus.NOT_FOUND);
       return user;
     } catch (error) {
       throw new HttpException(error, 500);
@@ -216,32 +171,35 @@ export class UserService {
     try {
       const users = await this._prismaService.user.findMany({
         where: {
-          idRol,
-          state: true,
+          roleId: idRol,
+          status: true,
         },
         include: {
-          rol: {
+          Role: {
             select: {
               name: true,
-            }
-          }
-        }
+            },
+          },
+        },
       });
 
-      if (!users) throw new HttpException('No se encontraron usuarios', HttpStatus.NOT_FOUND);
+      if (!users)
+        throw new HttpException(
+          'No se encontraron usuarios',
+          HttpStatus.NOT_FOUND,
+        );
 
       return users.map((user) => {
         delete user.password;
         return {
           id: user.id,
           dni: user.dni,
-          userName: user.userName,
+          completeName: `${user.name} ${user.lastName}`,
           email: user.email,
-          state: user.state,
-          role: user.rol.name,
+          status: user.status,
+          role: user.Role.name,
         };
       });
-
     } catch (error) {
       throw new HttpException(error, HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -253,10 +211,10 @@ export class UserService {
         email,
       },
       include: {
-        rol: {
+        Role: {
           select: {
             name: true,
-            state: true,
+            status: true,
           },
         },
       },
@@ -280,7 +238,7 @@ export class UserService {
           id,
         },
         data: {
-          idRol: idRole,
+          roleId: idRole,
         },
       });
       if (!updatedUser)
@@ -300,8 +258,8 @@ export class UserService {
           id,
         },
         data: {
-          userName: updateUserDto.userName,
-        }
+          name: updateUserDto.name,
+        },
       });
       return updatedUser;
     } catch (error) {
@@ -319,7 +277,7 @@ export class UserService {
         },
         data: {
           password: this.hashPassword(password),
-        }
+        },
       });
       return updatedUser;
     } catch (error) {
@@ -334,7 +292,7 @@ export class UserService {
           id,
         },
         data: {
-          state: false,
+          status: false,
         },
       });
     } catch (error) {

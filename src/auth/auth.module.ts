@@ -8,7 +8,6 @@ import config from 'src/core/config';
 import { PassportModule } from '@nestjs/passport';
 import { JWTstrategy } from './strategy/jwt.strategy';
 import { UserModule } from 'src/modules/user/user.module';
-import { StudentsModule } from 'src/modules/students/students.module';
 import { RoleModule } from 'src/modules/role/role.module';
 
 @Module({
@@ -23,8 +22,7 @@ import { RoleModule } from 'src/modules/role/role.module';
       }),
     }),
     UserModule,
-    StudentsModule,
-    RoleModule
+    RoleModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JWTstrategy],

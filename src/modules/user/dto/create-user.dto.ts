@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TypeDNI } from '@prisma/client';
-import {
-  IsEmail,
-  IsEnum,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsEmail, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({ example: '12345678', description: 'DNI', type: 'string' })
@@ -18,14 +11,39 @@ export class CreateUserDto {
     type: 'string',
   })
   @IsString({ message: 'el nombre de usuario debe ser un string' })
-  userName: string;
+  name: string;
   @ApiProperty({
-    example: 'example@yavirac.edu.ec',
+    example: 'Ruiz',
+    description: 'Apellido',
+    type: 'string',
+  })
+  @IsString({ message: 'el apellido debe ser un string' })
+  lastName: string;
+  @ApiProperty({
+    example: 'example@example.com',
     description: 'Correo',
     type: 'string',
   })
-  @IsEmail()
+  @IsEmail(
+    { allow_ip_domain: false },
+    { message: 'el correo debe ser un email' },
+  )
   email: string;
+  @ApiProperty({
+    example: '123456789',
+    description: 'Teléfono',
+    type: 'string',
+  })
+  @IsString({ message: 'el teléfono debe ser un string' })
+  phone: string;
+  @ApiProperty({
+    example: 'company',
+    description: 'Nombre de la empresa',
+    type: 'string',
+  })
+  @IsOptional()
+  @IsString({ message: 'el nombre de la empresa debe ser un string' })
+  company?: string;
   @ApiProperty({
     example: '12345678',
     description: 'Contraseña',
@@ -38,5 +56,5 @@ export class CreateUserDto {
     { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 0 },
     { message: 'El rol debe ser un número' },
   )
-  idRol: number;
+  roleId: number;
 }

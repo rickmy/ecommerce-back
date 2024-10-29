@@ -32,7 +32,7 @@ import { PaginationResult } from 'src/core/models/paginationResult';
 @ApiBearerAuth()
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @ApiOkResponse({ description: 'Usuario Creado', type: CreateUserDto })
   @ApiOperation({ summary: 'Crear usuario' })
@@ -75,7 +75,6 @@ export class UserController {
     return this.userService.findAllByRole(+id);
   }
 
-
   @ApiOkResponse({
     description: 'Usuario encontrado',
     type: UserEntity,
@@ -90,8 +89,6 @@ export class UserController {
   findOne(@Param('id', ParseIntPipe) id: string) {
     return this.userService.findOne(+id);
   }
-
-
 
   @ApiOkResponse({
     description: 'Usuario Actualizado',
@@ -108,8 +105,11 @@ export class UserController {
       required: ['userName'],
     },
   })
-  update(@Param('id', ParseIntPipe) id: string, @Body('userName') userName: string): UpdateUserResponseDto {
-    const updateUserDto: UpdateUserDto = { userName };
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body('userName') userName: string,
+  ): UpdateUserResponseDto {
+    const updateUserDto: UpdateUserDto = { name: userName };
     this.userService.update(+id, updateUserDto);
     return { message: 'Usuario Actualizado' };
   }
