@@ -1,8 +1,8 @@
 {
-  "name": "back",
-  "version": "0.0.1",
+  "name": "back-ecommerce",
+  "version": "1.0.1",
   "description": "",
-  "author": "",
+  "author": "rickmy",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

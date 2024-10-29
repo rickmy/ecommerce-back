@@ -1,7 +1,4 @@
-/*
-https://docs.nestjs.com/exception-filters#exception-filters-1
-*/
-
+/* eslint-disable prettier/prettier */
 import {
   ExceptionFilter,
   Catch,
@@ -44,7 +41,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     logger.error(errorLog);
 
-    fs.appendFile('logs/error.log', `${errorLog}\n`, 'utf8', (err) => {
+    fs.appendFile(`logs/error${errorResponse.timestamp}.log`, `${errorLog}\n`, 'utf8', (err) => {
       if (err) throw err;
     });
 
