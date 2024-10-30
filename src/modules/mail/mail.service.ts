@@ -17,7 +17,7 @@ export class MailService {
       this.logger.log(res);
       return true;
     } catch (err) {
-      this.logger.error(err);
+      this.logger.error(err, 'Error al enviar correo');
       return false;
     }
   }
@@ -27,8 +27,6 @@ export class MailService {
     token: string,
     fullName: string,
   ): Promise<boolean> {
-    this.logger.warn(`Sending email to ${__dirname}`);
-
     try {
       const res = await this._mailerService.sendMail({
         to: email,
