@@ -12,7 +12,11 @@ export class ProductService {
 
   async create(createProductDto: CreateProductDto): Promise<ProductDto> {
     try {
-      const isExist = await this.findOneByCode(createProductDto.code);
+      const isExist = await this._prismaService.product.findFirst({
+        where: {
+          code: createProductDto.code,
+        },
+      });
 
       if (isExist) {
         throw new HttpException(
@@ -43,8 +47,7 @@ export class ProductService {
         throw new HttpException('Product not created', HttpStatus.BAD_REQUEST);
       }
 
-      const images = product.images as unknown as ImageInfoDto[];
-
+      const images = this.parseImage(product.images as string);
       return {
         id: product.id,
         name: product.name,
@@ -74,7 +77,7 @@ export class ProductService {
       }
       console.log(products);
       return products.map((product) => {
-        const images = product.images as unknown as ImageInfoDto[];
+        const images = this.parseImage(product.images as string);
         return {
           id: product.id,
           name: product.name,
@@ -108,7 +111,7 @@ export class ProductService {
       if (!product)
         throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
 
-      const images = product.images as unknown as ImageInfoDto[];
+      const images = this.parseImage(product.images as string);
       return {
         id: product.id,
         name: product.name,
@@ -143,7 +146,7 @@ export class ProductService {
       if (!product)
         throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
 
-      const images = product.images as unknown as ImageInfoDto[];
+      const images = this.parseImage(product.images as string);
       return {
         id: product.id,
         name: product.name,
@@ -167,7 +170,19 @@ export class ProductService {
     return `This action updates a #${id} product`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: number) {
+    try {
+      await this._prismaService.product.delete({
+        where: {
+          id: id,
+        },
+      });
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
+
+  parseImage(images: string): ImageInfoDto[] {
+    return JSON.parse(images) as ImageInfoDto[];
   }
 }

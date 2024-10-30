@@ -15,7 +15,6 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { CredentialsDto } from './dto/credentials.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import * as bcrypt from 'bcrypt';
-import { RoleService } from 'src/modules/role/role.service';
 @Injectable()
 export class AuthService {
   private logger = new Logger(AuthService.name);
@@ -23,32 +22,45 @@ export class AuthService {
     private _mailService: MailService,
     private _userService: UserService,
     private _jwtService: JwtService,
-    private _roleService: RoleService,
   ) {}
 
   async login(credentials: CredentialsDto): Promise<ResponseAuthModel> {
-    this.logger.log(`Login attempt for ${credentials.email}`);
-    const user = await this._userService.findByEmail(credentials.email);
-    if (!user) {
-      this.logger.log(`User not found ${credentials.email}`);
-      throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+    try {
+      this.logger.log(`Login attempt for ${credentials.email}`);
+      const user = await this._userService.findByEmail(credentials.email);
+      if (!user) {
+        this.logger.log(`User not found ${credentials.email}`);
+        throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+      }
+      if (!user.status) throw new UnauthorizedException('Usuario inactivo');
+      const isMatch = await this.comparePassword(
+        credentials.password,
+        user.password,
+      );
+      if (!isMatch) {
+        throw new BadRequestException('Credenciales invalidas');
+      }
+      const payload: PayloadModel = {
+        id: user.id,
+        email: user.email,
+        role: user.roleId,
+      };
+
+      this.logger.log(`Login success for ${credentials.email}`);
+      return {
+        accessToken: await this.createToken(payload),
+        user: {
+          id: user.id,
+          dni: user.dni,
+          completeName: `${user.name} ${user.lastName}`,
+          email: user.email,
+          status: user.status,
+          role: user.Role.name,
+        },
+      };
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
     }
-    if (!user.status) throw new UnauthorizedException('Usuario inactivo');
-    const isMatch = await this.comparePassword(
-      credentials.password,
-      user.password,
-    );
-    if (!isMatch) {
-      throw new BadRequestException('Credenciales invalidas');
-    }
-    const payload: PayloadModel = {
-      id: user.id,
-      email: user.email,
-      role: user.roleId,
-    };
-    user.password = undefined;
-    this.logger.log(`Login success for ${credentials.email}`);
-    return { accessToken: await this.createToken(payload) };
   }
 
   async createToken(payload: PayloadModel): Promise<string> {
