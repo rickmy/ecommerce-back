@@ -17,6 +17,9 @@ import {
 import { Request } from 'express';
 import { UploadFilesModule } from './modules/upload-files/upload-files.module';
 import { UnauthorizedExceptionFilter } from './core/filters/UnauthorizedException.filter';
+import { ProductModule } from './modules/product/product.module';
+import { CategoryModule } from './modules/category/category.module';
+import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
@@ -51,6 +54,9 @@ import { UnauthorizedExceptionFilter } from './core/filters/UnauthorizedExceptio
       },
     }),
     UploadFilesModule,
+    ProductModule,
+    CategoryModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [

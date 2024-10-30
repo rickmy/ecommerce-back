@@ -45,7 +45,7 @@ model Product {
   code        String   @unique @default(uuid())
   name        String
   description String
-  images      String[]
+  images      Json
   tags        String[]
   stock       Int
   price       Float
