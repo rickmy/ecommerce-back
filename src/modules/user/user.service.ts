@@ -14,11 +14,15 @@ import { PayloadModel } from 'src/auth/models/payloadModel';
 import { UserDto } from './dto/user.dto';
 import { PaginationResult } from 'src/core/models/paginationResult';
 import { PaginationOptions } from 'src/core/models/paginationOptions';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UserService {
   private logger = new Logger(UserService.name);
-  constructor(private _prismaService: PrismaService) {}
+  constructor(
+    private _mailService: MailService,
+    private _prismaService: PrismaService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User | null> {
     const { dni, email } = createUserDto;
@@ -135,7 +139,7 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    console.log('id', id);
+    await this._mailService.sendTestEmail('rick_my@outlook.com');
     try {
       const user = await this._prismaService.user.findUnique({
         where: {
@@ -161,7 +165,7 @@ export class UserService {
         throw new HttpException('El usuario no existe', HttpStatus.NOT_FOUND);
       return user;
     } catch (error) {
-      throw new HttpException(error, 500);
+      throw new HttpException(error.message, error.status);
     }
   }
 

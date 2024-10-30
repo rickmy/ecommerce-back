@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiTags,
@@ -12,6 +12,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResponseAuthModel } from './models/responseAuth';
 import { JwtAuthGuard } from './guards/auth/auth.guard';
+import { RequestResetPasswordDto } from './dto/request-password.dto';
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
@@ -34,7 +35,10 @@ export class AuthController {
 
   @Post('forget-password')
   @ApiOperation({ summary: 'Olvidar contraseña' })
-  @ApiBody({ type: String, description: 'Correo electrónico del usuario' })
+  @ApiBody({
+    type: RequestResetPasswordDto,
+    description: 'Correo electrónico del usuario',
+  })
   @ApiResponse({
     status: 200,
     description:

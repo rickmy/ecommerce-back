@@ -13,17 +13,16 @@ import { ConfigService } from '@nestjs/config';
         transport: {
           host: config().mailHost,
           port: +config().mailPort,
-          secure: false,
           auth: {
             user: config().mailUser,
             pass: config().mailPassword,
           },
         },
         defaults: {
-          from: `"Yavirac" <${config().mailFrom}>`,
+          from: `"Ecommerce" <${config().mailFrom}>`,
         },
         template: {
-          dir: join(__dirname, 'templates'),
+          dir: join(__dirname, '../../../modules/mail/templates'),
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
