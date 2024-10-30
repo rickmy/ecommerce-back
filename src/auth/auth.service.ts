@@ -66,7 +66,7 @@ export class AuthService {
       const payload = await this._jwtService.verifyAsync(token);
       return payload;
     } catch (error) {
-      //this.loggerService.error('Error en el token JWT', error.stack);
+      this.logger.error('Error en el token JWT', error.stack);
       throw new UnauthorizedException(`Error en el token JWT ${error}`);
     }
   }
