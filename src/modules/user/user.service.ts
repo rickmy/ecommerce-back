@@ -51,10 +51,7 @@ export class UserService {
 
   async validateUser(payload: PayloadModel): Promise<boolean> {
     const user = await this.findByEmail(payload.email);
-    if (!user) {
-      throw new HttpException('Usuario no existe', HttpStatus.UNAUTHORIZED);
-    }
-    return !!user;
+    return user ? true : false;
   }
 
   hashPassword(password: string): string {
@@ -138,6 +135,7 @@ export class UserService {
   }
 
   async findOne(id: number) {
+    console.log('id', id);
     try {
       const user = await this._prismaService.user.findUnique({
         where: {

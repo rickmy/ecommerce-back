@@ -168,12 +168,6 @@ export class AuthService {
     return new HttpException('Contraseña actualizada', HttpStatus.OK);
   }
 
-  async validateToken(payload: PayloadModel): Promise<boolean> {
-    const hasUser = await this._userService.validateUser(payload);
-    if (!hasUser) throw new UnauthorizedException('🚫 NO AUTORIZADO. 🚫');
-    return true;
-  }
-
   async comparePassword(
     password: string,
     storedPasswordHash: string,

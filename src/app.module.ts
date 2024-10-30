@@ -16,6 +16,7 @@ import {
 } from './core/middleware/correlation-id/correlation-id.middleware';
 import { Request } from 'express';
 import { UploadFilesModule } from './modules/upload-files/upload-files.module';
+import { UnauthorizedExceptionFilter } from './core/filters/UnauthorizedException.filter';
 
 @Module({
   imports: [
@@ -56,6 +57,10 @@ import { UploadFilesModule } from './modules/upload-files/upload-files.module';
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: UnauthorizedExceptionFilter,
     },
     AppService,
   ],

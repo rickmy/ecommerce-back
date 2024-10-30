@@ -17,6 +17,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
+    const date =  new Date();
 
     const status =
       exception instanceof HttpException
@@ -31,7 +32,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const errorResponse = {
       statusCode: status,
       message: status === 500 ? `Ah ocurrido un error en el servidor, por favor contacte al administrador. Error: #${request['X-Correlation-Id']}` : errorMsg.message || errorMsg,
-      timestamp: new Date().toISOString(),
+      timestamp: date.toLocaleString(),
       currentId: request['X-Correlation-Id'],
       path: request.url,
       method: request.method,
@@ -41,7 +42,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     logger.error(errorLog);
 
-    fs.appendFile(`logs/error${errorResponse.timestamp}.log`, `${errorLog}\n`, 'utf8', (err) => {
+    fs.appendFile(`logs/error.log`, `${errorLog}\n`, 'utf8', (err) => {
       if (err) throw err;
     });
 
