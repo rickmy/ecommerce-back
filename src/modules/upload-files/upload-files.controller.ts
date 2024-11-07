@@ -1,53 +1,62 @@
-import { Controller, UseInterceptors, UploadedFile, Post, Body, HttpException, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  UseInterceptors,
+  UploadedFile,
+  Post,
+  Body,
+  HttpException,
+  Res,
+  UseGuards,
+  UploadedFiles,
+} from '@nestjs/common';
 import { UploadFilesService } from './upload-files.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import {  FileNameDto} from './dto/file.dto';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { FileNameDto } from './dto/file.dto';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/auth/auth.guard';
-
-
-class Path {
-  path: string;
-}
+import { UploadApiResponseCloudinary } from './dto/upload-api-response';
 @ApiBearerAuth()
 @ApiTags('upload-files')
 @Controller('upload-files')
 @UseGuards(JwtAuthGuard)
 export class UploadFilesController {
-  constructor(private readonly uploadFilesService: UploadFilesService) { }
+  constructor(private readonly uploadFilesService: UploadFilesService) {}
   @Post()
-  @ApiOperation({ summary: 'Subir archivos pdf' })
+  @ApiOperation({ summary: 'Subir imagenes' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: 'Archivo a subir',
-    schema: {
-      type: 'object',
-      properties: {
-        archivo: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  @ApiOkResponse({
-    description: 'Archivo subido',
-    type: Path,
-  })
   @UseInterceptors(FileInterceptor('file'))
   create(@UploadedFile() file: Express.Multer.File) {
-    return this.uploadFilesService.uploadFile(file);
+    return this.uploadFilesService.uploadImageToCloudinary(file);
   }
 
+  @ApiOperation({ summary: 'Upload multi images' })
+  @ApiConsumes('multipart/form-data')
+  @ApiOkResponse({
+    description: 'Images uploaded',
+    type: [UploadApiResponseCloudinary],
+  })
+  @UseInterceptors(FileFieldsInterceptor([{ name: 'images', maxCount: 5 }]))
+  @Post('multi')
+  UploadImages(@UploadedFiles() files: { images: Express.Multer.File[] }) {
+    return this.uploadFilesService.uploadImages(files.images);
+  }
 
   @Post('remove')
   @ApiOperation({ summary: 'Eliminar archivos pdf' })
-  @ApiOkResponse({type: HttpException})
-  remove(@Body() name:FileNameDto) {
+  @ApiOkResponse({ type: HttpException })
+  remove(@Body() name: FileNameDto) {
     return this.uploadFilesService.removeFile(name);
   }
-
 
   @Post('download')
   @ApiOperation({ summary: 'Descargar archivos pdf' })
@@ -66,6 +75,4 @@ export class UploadFilesController {
   async download(@Body() name: FileNameDto, @Res() res: Response) {
     return this.uploadFilesService.downloadFile(name, res);
   }
-
-
 }

@@ -1,3 +1,3 @@
-export class FileNameDto{
-    name: string;
+export class FileNameDto {
+  name: string;
 }

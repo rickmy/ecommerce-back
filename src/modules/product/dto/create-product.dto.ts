@@ -31,6 +31,7 @@ export class CreateProductDto {
   })
   @IsString()
   description: string;
+  /*
   @ApiProperty({
     type: [ImageInfoDto],
     example: [{ image: 'product-1.jpg', isMain: true }],
@@ -38,6 +39,13 @@ export class CreateProductDto {
   })
   @IsArray()
   images: ImageInfoDto[];
+   */
+  @ApiProperty({
+    type: Number,
+    example: 0,
+    description: 'Index main image',
+  })
+  indexMainImage: number;
   @ApiProperty({
     type: [String],
     example: ['product', 'product-1'],

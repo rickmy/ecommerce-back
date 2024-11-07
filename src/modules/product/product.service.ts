@@ -5,10 +5,14 @@ import { ProductDto } from './dto/product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ImageInfoDto } from './dto/image-product.dto';
 import { DetailProductDto } from './dto/detail-product.dto';
+import { UploadFilesService } from '../upload-files/upload-files.service';
 
 @Injectable()
 export class ProductService {
-  constructor(private _prismaService: PrismaService) {}
+  constructor(
+    private _prismaService: PrismaService,
+    private _uploadFileService: UploadFilesService,
+  ) {}
 
   async create(createProductDto: CreateProductDto): Promise<ProductDto> {
     try {
@@ -34,7 +38,7 @@ export class ProductService {
           priceSale: createProductDto.priceSale,
           isSale: createProductDto.isSale,
           categoryId: createProductDto.categoryId,
-          images: JSON.stringify(createProductDto.images),
+          images: JSON.stringify([]),
           tags: createProductDto.tags,
           stock: createProductDto.stock,
         },
@@ -50,6 +54,7 @@ export class ProductService {
       const images = this.parseImage(product.images as string);
       return {
         id: product.id,
+        code: product.code,
         name: product.name,
         description: product.description,
         price: product.price,
@@ -59,6 +64,82 @@ export class ProductService {
         category: product.category.name,
         image: images.find((image) => image.isMain).image,
         images: images,
+        stock: product.stock,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
+
+  async createProductImage(
+    createProductDto: CreateProductDto,
+    files: Express.Multer.File[],
+  ) {
+    try {
+      const isExist = await this._prismaService.product.findFirst({
+        where: {
+          code: createProductDto.code,
+        },
+      });
+
+      if (isExist) {
+        throw new HttpException(
+          'Product with this code already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const uploadImages = await Promise.all(
+        files.map(async (file) => {
+          return await this._uploadFileService.uploadImageToCloudinary(file);
+        }),
+      );
+
+      console.log(uploadImages);
+
+      const imageInfoDto: ImageInfoDto[] = uploadImages.map((image, index) => {
+        return {
+          image: image.secure_url,
+          isMain: index === createProductDto.indexMainImage,
+        };
+      });
+
+      const product = await this._prismaService.product.create({
+        data: {
+          code: createProductDto.code,
+          name: createProductDto.name,
+          description: createProductDto.description,
+          price: createProductDto.price,
+          priceSale: createProductDto.priceSale,
+          isSale: createProductDto.isSale,
+          categoryId: createProductDto.categoryId,
+          images: JSON.stringify(imageInfoDto),
+          tags: createProductDto.tags,
+          stock: createProductDto.stock,
+        },
+        include: {
+          category: true,
+        },
+      });
+
+      if (!product) {
+        throw new HttpException('Product not created', HttpStatus.BAD_REQUEST);
+      }
+
+      const images = this.parseImage(product.images as string);
+      return {
+        id: product.id,
+        code: product.code,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        priceSale: product.priceSale,
+        isSale: product.isSale,
+        categoryId: product.categoryId,
+        category: product.category.name,
+        image: images.find((image) => image.isMain).image,
+        images: images,
+        stock: product.stock,
       };
     } catch (error) {
       throw new HttpException(error.message, error.status);
@@ -80,6 +161,7 @@ export class ProductService {
         const images = this.parseImage(product.images as string);
         return {
           id: product.id,
+          code: product.code,
           name: product.name,
           description: product.description,
           image: images.find((image) => image.isMain).image,
@@ -89,6 +171,7 @@ export class ProductService {
           isSale: product.isSale,
           categoryId: product.categoryId,
           category: product.category.name,
+          stock: product.stock,
         };
       });
     } catch (error) {
@@ -114,6 +197,7 @@ export class ProductService {
       const images = this.parseImage(product.images as string);
       return {
         id: product.id,
+        code: product.code,
         name: product.name,
         description: product.description,
         price: product.price,
@@ -125,6 +209,7 @@ export class ProductService {
         images: images,
         tags: product.tags,
         reviews: product.Review,
+        stock: product.stock,
       };
     } catch (error) {
       throw new HttpException(error.message, error.status);

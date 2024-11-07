@@ -9,6 +9,12 @@ export class ProductDto {
     example: 'product-1',
     description: 'Product code',
   })
+  code: string;
+  @ApiProperty({
+    type: String,
+    example: 'product-1',
+    description: 'Product code',
+  })
   name: string;
   @ApiProperty({
     type: String,
@@ -58,4 +64,10 @@ export class ProductDto {
     description: 'Category name',
   })
   category: string;
+  @ApiProperty({
+    type: Number,
+    example: 10,
+    description: 'Product stock',
+  })
+  stock: number;
 }

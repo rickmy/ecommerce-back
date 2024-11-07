@@ -3,7 +3,8 @@ import { StorageClient } from '@supabase/storage-js';
 import config from 'src/core/config';
 import { FileNameDto } from './dto/file.dto';
 import { Response } from 'express';
-
+import { UploadApiResponse } from 'cloudinary';
+import { v2 } from 'cloudinary';
 @Injectable()
 export class UploadFilesService {
   private readonly storage = new StorageClient(config().URL_SUPABASE, {
@@ -12,7 +13,7 @@ export class UploadFilesService {
   });
   private readonly bucket = 'product-img';
 
-  private readonly logger = Logger;
+  private readonly logger = new Logger(UploadFilesService.name);
 
   async listBucket() {
     const { data, error } = await this.storage.listBuckets();
@@ -52,6 +53,94 @@ export class UploadFilesService {
       );
     }
     return data;
+  }
+
+  async uploadImageToCloudinary(
+    file: Express.Multer.File,
+  ): Promise<UploadApiResponse> {
+    if (!file) {
+      throw new HttpException(
+        'No se ha subido ningun archivo',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    this.logger.log('Subiendo archivo a cloudinary');
+    try {
+      const result = await this.uploadImage(file);
+
+      console.log(result);
+
+      if (!result) {
+        throw new HttpException(
+          'No se pudo subir la imagen',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return result;
+    } catch (error) {
+      this.logger.error(error);
+      const errorMessages = error.message || error.error;
+      throw new HttpException(
+        `Error Cloudinary: ${errorMessages}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async uploadImages(files: Express.Multer.File[]) {
+    try {
+      const result = await Promise.all(
+        files.map(async (file) => {
+          return await this.uploadImage(file);
+        }),
+      );
+
+      console.log(result);
+
+      if (!result) {
+        throw new HttpException(
+          'No se pudo subir la imagen',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return result;
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        `Error Cloudinary: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async uploadImage(file: Express.Multer.File): Promise<UploadApiResponse> {
+    return new Promise((resolve, reject) => {
+      const fileName = Math.random().toString(36).substring(2) + Date.now();
+      const uploadOptions = {
+        folder: 'ecommerce',
+        filename_override: `${fileName}`,
+        transformation: [
+          { width: 600, height: 600, crop: 'scale' },
+          { quality: 'auto', fetch_format: 'webp' },
+          { radius: 20 },
+          { gravity: 'auto' },
+          { effect: 'sharpen' },
+        ],
+      };
+
+      const upload = v2.uploader.upload_stream(
+        uploadOptions,
+        (error, result) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(result);
+        },
+      );
+      upload.end(file.buffer);
+    });
   }
 
   async removeFile(name: FileNameDto) {
