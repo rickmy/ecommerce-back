@@ -50,8 +50,6 @@ export class ProductService {
       if (!product) {
         throw new HttpException('Product not created', HttpStatus.BAD_REQUEST);
       }
-
-      const images = this.parseImage(product.images as string);
       return {
         id: product.id,
         code: product.code,
@@ -62,83 +60,8 @@ export class ProductService {
         isSale: product.isSale,
         categoryId: product.categoryId,
         category: product.category.name,
-        image: images.find((image) => image.isMain).image,
-        images: images,
-        stock: product.stock,
-      };
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
-  }
-
-  async createProductImage(
-    createProductDto: CreateProductDto,
-    files: Express.Multer.File[],
-  ) {
-    try {
-      const isExist = await this._prismaService.product.findFirst({
-        where: {
-          code: createProductDto.code,
-        },
-      });
-
-      if (isExist) {
-        throw new HttpException(
-          'Product with this code already exists',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      const uploadImages = await Promise.all(
-        files.map(async (file) => {
-          return await this._uploadFileService.uploadImageToCloudinary(file);
-        }),
-      );
-
-      console.log(uploadImages);
-
-      const imageInfoDto: ImageInfoDto[] = uploadImages.map((image, index) => {
-        return {
-          image: image.secure_url,
-          isMain: index === createProductDto.indexMainImage,
-        };
-      });
-
-      const product = await this._prismaService.product.create({
-        data: {
-          code: createProductDto.code,
-          name: createProductDto.name,
-          description: createProductDto.description,
-          price: createProductDto.price,
-          priceSale: createProductDto.priceSale,
-          isSale: createProductDto.isSale,
-          categoryId: createProductDto.categoryId,
-          images: JSON.stringify(imageInfoDto),
-          tags: createProductDto.tags,
-          stock: createProductDto.stock,
-        },
-        include: {
-          category: true,
-        },
-      });
-
-      if (!product) {
-        throw new HttpException('Product not created', HttpStatus.BAD_REQUEST);
-      }
-
-      const images = this.parseImage(product.images as string);
-      return {
-        id: product.id,
-        code: product.code,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        priceSale: product.priceSale,
-        isSale: product.isSale,
-        categoryId: product.categoryId,
-        category: product.category.name,
-        image: images.find((image) => image.isMain).image,
-        images: images,
+        image: 'images.find((image) => image.isMain).image',
+        images: [],
         stock: product.stock,
       };
     } catch (error) {
@@ -151,6 +74,9 @@ export class ProductService {
       const products = await this._prismaService.product.findMany({
         include: {
           category: true,
+        },
+        where: {
+          status: true,
         },
       });
       if (products.length === 0) {
@@ -245,6 +171,54 @@ export class ProductService {
         images: images,
         tags: product.tags,
         reviews: product.Review,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
+
+  async setImages(id: number, indexMain: number, files: Express.Multer.File[]) {
+    try {
+      const uploadImages = await this._uploadFileService.uploadImages(files);
+
+      console.log(uploadImages);
+
+      const imageInfoDto: ImageInfoDto[] = uploadImages.map((image, index) => {
+        return {
+          image: image.secure_url,
+          isMain: index === indexMain,
+        };
+      });
+
+      const product = await this._prismaService.product.update({
+        where: {
+          id: id,
+        },
+        data: {
+          images: JSON.stringify(imageInfoDto),
+        },
+        include: {
+          category: true,
+        },
+      });
+
+      if (!product) {
+        throw new HttpException('Product not update', HttpStatus.BAD_REQUEST);
+      }
+
+      return {
+        id: product.id,
+        code: product.code,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        priceSale: product.priceSale,
+        isSale: product.isSale,
+        categoryId: product.categoryId,
+        category: product.category.name,
+        image: imageInfoDto.find((image) => image.isMain).image,
+        images: imageInfoDto,
+        stock: product.stock,
       };
     } catch (error) {
       throw new HttpException(error.message, error.status);

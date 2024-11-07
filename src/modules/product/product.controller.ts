@@ -6,6 +6,8 @@ import {
   Put,
   Param,
   Delete,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -19,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { ProductDto } from './dto/product.dto';
 import { DetailProductDto } from './dto/detail-product.dto';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('product')
 @ApiTags('Product')
@@ -55,6 +58,20 @@ export class ProductController {
   @Put(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(+id, updateProductDto);
+  }
+
+  @ApiOperation({ summary: 'Set images' })
+  @ApiOkResponse({ description: 'Images set', type: ProductDto })
+  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'indexMain', type: String })
+  @UseInterceptors(FileFieldsInterceptor([{ name: 'images', maxCount: 5 }]))
+  @Put('images/:id/:indexMain')
+  setImages(
+    @Param('id') id: string,
+    @Param('indexMain') indexMain: string,
+    @UploadedFiles() files: { images: Express.Multer.File[] },
+  ) {
+    return this.productService.setImages(+id, +indexMain, files.images);
   }
 
   @ApiOperation({ summary: 'Delete product' })

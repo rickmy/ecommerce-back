@@ -33,14 +33,12 @@ export class UploadFilesController {
   constructor(private readonly uploadFilesService: UploadFilesService) {}
   @Post()
   @ApiOperation({ summary: 'Subir imagenes' })
-  @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
   create(@UploadedFile() file: Express.Multer.File) {
     return this.uploadFilesService.uploadImageToCloudinary(file);
   }
 
-  @ApiOperation({ summary: 'Upload multi images' })
-  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload multiples images' })
   @ApiOkResponse({
     description: 'Images uploaded',
     type: [UploadApiResponseCloudinary],

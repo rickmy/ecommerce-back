@@ -45,6 +45,7 @@ export class CreateProductDto {
     example: 0,
     description: 'Index main image',
   })
+  @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 0 })
   indexMainImage: number;
   @ApiProperty({
     type: [String],
