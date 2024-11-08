@@ -143,6 +143,30 @@ export class UploadFilesService {
     });
   }
 
+  async removeImage(publicId: string[]) {
+    try {
+      const result = await Promise.all(
+        publicId.map(async (id) => {
+          return await v2.uploader.destroy(id, { invalidate: true });
+        }),
+      );
+      console.log(result);
+      if (!result) {
+        throw new HttpException(
+          'No se pudo eliminar la imagen',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return result;
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        `Error Cloudinary: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async removeFile(name: FileNameDto) {
     const { data, error } = await this.storage
       .from(this.bucket)

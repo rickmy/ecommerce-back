@@ -60,7 +60,7 @@ export class ProductService {
         isSale: product.isSale,
         categoryId: product.categoryId,
         category: product.category.name,
-        image: 'images.find((image) => image.isMain).image',
+        image: '',
         images: [],
         stock: product.stock,
       };
@@ -82,7 +82,6 @@ export class ProductService {
       if (products.length === 0) {
         throw new HttpException('No products found', HttpStatus.NO_CONTENT);
       }
-      console.log(products);
       return products.map((product) => {
         const images = this.parseImage(product.images as string);
         return {
@@ -225,15 +224,124 @@ export class ProductService {
     }
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async updateImages(
+    id: number,
+    indexMain: number,
+    files: Express.Multer.File[],
+  ) {
+    try {
+      const product = await this._prismaService.product.findFirst({
+        where: {
+          id: id,
+        },
+      });
+
+      console.log(product);
+
+      const uploadImages = await this._uploadFileService.uploadImages(files);
+
+      console.log(uploadImages);
+
+      const imageInfoDto: ImageInfoDto[] = uploadImages.map((image) => {
+        return {
+          image: image.secure_url,
+          isMain: false,
+        };
+      });
+
+      const productImages = [
+        ...this.parseImage(product.images as string),
+        ...imageInfoDto,
+      ].map((image, index) => {
+        return {
+          image: image.image,
+          isMain: index === indexMain,
+        };
+      });
+
+      const productUpdate = await this._prismaService.product.update({
+        where: {
+          id: id,
+        },
+        data: {
+          images: JSON.stringify(productImages),
+        },
+        include: {
+          category: true,
+        },
+      });
+
+      if (!productUpdate) {
+        throw new HttpException('Product not update', HttpStatus.BAD_REQUEST);
+      }
+
+      return {
+        ...productUpdate,
+        category: productUpdate.category.name,
+        image: productImages.find((image) => image.isMain).image,
+        images: productImages,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
+
+  async update(
+    id: number,
+    updateProductDto: UpdateProductDto,
+  ): Promise<ProductDto> {
+    try {
+      const images = updateProductDto.images.map((image, index) => {
+        return {
+          image: image.image,
+          isMain: index === updateProductDto.indexMainImage,
+        };
+      });
+
+      const product = await this._prismaService.product.update({
+        where: {
+          id: id,
+        },
+        data: {
+          code: updateProductDto.code,
+          name: updateProductDto.name,
+          description: updateProductDto.description,
+          price: updateProductDto.price,
+          priceSale: updateProductDto.priceSale,
+          isSale: updateProductDto.isSale,
+          categoryId: updateProductDto.categoryId,
+          tags: updateProductDto.tags,
+          stock: updateProductDto.stock,
+          images: JSON.stringify(images),
+        },
+        include: {
+          category: true,
+        },
+      });
+
+      if (!product) {
+        throw new HttpException('Product not update', HttpStatus.BAD_REQUEST);
+      }
+
+      return {
+        ...product,
+        category: product.category.name,
+        image: updateProductDto.images.find((image) => image.isMain).image,
+        images: updateProductDto.images,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
   }
 
   async remove(id: number) {
     try {
-      await this._prismaService.product.delete({
+      await this._prismaService.product.update({
         where: {
           id: id,
+        },
+        data: {
+          status: false,
         },
       });
     } catch (error) {

@@ -16,7 +16,7 @@ import {
 } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
-  ApiConsumes,
+  ApiBody,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -28,7 +28,6 @@ import { UploadApiResponseCloudinary } from './dto/upload-api-response';
 @ApiBearerAuth()
 @ApiTags('upload-files')
 @Controller('upload-files')
-@UseGuards(JwtAuthGuard)
 export class UploadFilesController {
   constructor(private readonly uploadFilesService: UploadFilesService) {}
   @Post()
@@ -50,10 +49,12 @@ export class UploadFilesController {
   }
 
   @Post('remove')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Eliminar archivos pdf' })
+  @ApiBody({ type: [String] })
   @ApiOkResponse({ type: HttpException })
-  remove(@Body() name: FileNameDto) {
-    return this.uploadFilesService.removeFile(name);
+  remove(@Body() publicsId: string[]) {
+    return this.uploadFilesService.removeImage(publicsId);
   }
 
   @Post('download')

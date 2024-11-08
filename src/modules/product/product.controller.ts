@@ -74,6 +74,20 @@ export class ProductController {
     return this.productService.setImages(+id, +indexMain, files.images);
   }
 
+  @ApiOperation({ summary: 'update images' })
+  @ApiOkResponse({ description: 'Images update ', type: ProductDto })
+  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'indexMain', type: String })
+  @UseInterceptors(FileFieldsInterceptor([{ name: 'images', maxCount: 5 }]))
+  @Put('images/update/:id/:indexMain')
+  updateImages(
+    @Param('id') id: string,
+    @Param('indexMain') indexMain: string,
+    @UploadedFiles() files: { images: Express.Multer.File[] },
+  ) {
+    return this.productService.updateImages(+id, +indexMain, files.images);
+  }
+
   @ApiOperation({ summary: 'Delete product' })
   @ApiOkResponse({ description: 'Product deleted', type: String })
   @ApiParam({ name: 'id', type: String })
