@@ -27,6 +27,7 @@ import { UserDto } from './dto/user.dto';
 import { UpdateUserResponseDto } from './dto/update-user-response-dto';
 import { PaginationOptions } from 'src/core/models/paginationOptions';
 import { PaginationResult } from 'src/core/models/paginationResult';
+import { CreateClientDto } from './dto/create-user-client.dto';
 
 @ApiTags('user')
 @ApiBearerAuth()
@@ -39,6 +40,13 @@ export class UserController {
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  @ApiOkResponse({ description: 'Cliente Creado', type: CreateUserDto })
+  @ApiOperation({ summary: 'Crear cliente' })
+  @Post('client')
+  createClient(@Body() createClientDto: CreateClientDto) {
+    return this.userService.createClient(createClientDto);
   }
 
   @Post('all')

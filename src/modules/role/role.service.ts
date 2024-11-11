@@ -45,8 +45,10 @@ export class RoleService {
     try {
       const { page, limit } = options;
 
+      console.log(options);
+
       const optionsWhere = {
-        state: allActive ? true : undefined,
+        status: allActive ? true : undefined,
         name: options.name ? { contains: options.name } : undefined,
         code: options.identification
           ? { contains: options.identification }

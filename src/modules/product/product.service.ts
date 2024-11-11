@@ -106,6 +106,9 @@ export class ProductService {
 
   async findOne(id: number): Promise<DetailProductDto> {
     try {
+      if (!id)
+        throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+
       const product = await this._prismaService.product.findFirst({
         where: {
           id: id,

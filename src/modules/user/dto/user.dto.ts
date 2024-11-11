@@ -23,6 +23,8 @@ export class UserDto {
   email: string;
   @ApiProperty({ description: 'estado del usuario', example: true })
   status: boolean;
+  @ApiProperty({ description: 'rol del usuario', example: 'ADMIN' })
+  roleId: number;
   @ApiProperty({ description: 'nombre del rol', example: 'ADMIN' })
   role: string;
 }
