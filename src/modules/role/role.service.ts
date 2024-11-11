@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { RoleEntity } from './entities/role.entity';
 import { PaginationOptions } from 'src/core/models/paginationOptions';
 import { PaginationResult } from 'src/core/models/paginationResult';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class RoleService {
@@ -87,9 +88,14 @@ export class RoleService {
 
   async findRoleByName(name: string): Promise<RoleEntity> {
     try {
-      const nameRole = '%' + name + '%';
-      const role = await this._prismaService
-        .$queryRaw<RoleEntity>`SELECT * FROM "Rol" WHERE name LIKE ${nameRole}`;
+      const role = await this._prismaService.role.findFirst({
+        where: {
+          name: {
+            contains: name,
+            mode: Prisma.QueryMode.insensitive,
+          },
+        },
+      });
       if (!role)
         throw new HttpException('El rol no existe', HttpStatus.NOT_FOUND);
       this.logger.log('Rol encontrado');

@@ -63,6 +63,17 @@ export class UserController {
     return this.userService.findAll(options, true);
   }
 
+  @Post('clients')
+  @ApiOkResponse({
+    description: 'Usuarios encontrados',
+    type: PaginationResult<UserDto>,
+  })
+  @ApiOperation({ summary: 'Encontrar todos los clientes' })
+  @UseGuards(JwtAuthGuard)
+  findAllClients() {
+    return this.userService.findAllClients();
+  }
+
   @Get('byRole/:id')
   @ApiOkResponse({
     type: UserDto,

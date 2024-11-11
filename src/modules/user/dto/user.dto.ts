@@ -5,8 +5,17 @@ export class UserDto {
   id: number;
   @ApiProperty({ description: 'dni del usuario', example: '1234567890' })
   dni: string;
-  @ApiProperty({ description: 'nombre del usuario', example: 'ppepep' })
+  @ApiProperty({ description: 'nombre del usuario', example: 'Carlos' })
+  name: string;
+  @ApiProperty({ description: 'apellido del usuario', example: 'Slim' })
+  lastName: string;
+  @ApiProperty({ description: 'nombre del usuario', example: 'Carlos Slim' })
   completeName: string;
+  @ApiProperty({
+    description: 'nombre de la empresa del usuario',
+    example: 'Telcel',
+  })
+  company?: string;
   @ApiProperty({
     description: 'email del usuario',
     example: 'r@yavirac.edu.ec',

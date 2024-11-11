@@ -3,7 +3,10 @@ import { IsEmail, IsString } from 'class-validator';
 
 export class ChangePasswordDto {
   @IsEmail({}, { message: 'El campo debe ser numérico' })
-  @ApiProperty({ description: 'Email del usuario', example: 'r@yavirac.edu.ec'})
+  @ApiProperty({
+    description: 'Email del usuario',
+    example: 'r@yavirac.edu.ec',
+  })
   @IsEmail({}, { message: 'El campo debe ser numérico' })
   email: string;
   @IsString({ message: 'El campo debe ser string' })

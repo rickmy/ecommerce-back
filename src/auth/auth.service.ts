@@ -52,7 +52,10 @@ export class AuthService {
         user: {
           id: user.id,
           dni: user.dni,
+          name: user.name,
+          lastName: user.lastName,
           completeName: `${user.name} ${user.lastName}`,
+          company: user.company,
           email: user.email,
           status: user.status,
           role: user.Role.name,
