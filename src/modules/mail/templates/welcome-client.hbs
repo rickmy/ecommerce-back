@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenido a Nuestro Ecommerce</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .header img {
+      max-width: 100px;
+    }
+    .content {
+      text-align: center;
+    }
+    .content h1 {
+      color: #333;
+    }
+    .content p {
+      color: #666;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 12px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://via.placeholder.com/100" alt="Logo de la empresa">
+    </div>
+    <div class="content">
+      <h1>¡Bienvenido, {{name}}!</h1>
+      <p>Gracias por unirte a nuestro ecommerce. Estamos encantados de tenerte con nosotros.</p>
+      <p>Explora nuestra amplia gama de productos y disfruta de una experiencia de compra única.</p>
+      <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+    </div>
+    <ul>
+      <li>
+        Usuario: {{email}}
+      </li>
+      <li>
+        Contraseña: {{password}}
+      </li>
+    </ul>
+    <div class="footer">
+      <p>&copy; {{year}} Nuestro Ecommerce. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</body>
+</html></div></html>

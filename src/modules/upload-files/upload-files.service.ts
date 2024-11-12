@@ -123,7 +123,7 @@ export class UploadFilesService {
         filename_override: `${fileName}`,
         transformation: [
           { width: 600, height: 600, crop: 'scale' },
-          { quality: 'auto', fetch_format: 'webp' },
+          { quality: 'auto', fetch_format: 'avif' },
           { radius: 20 },
           { gravity: 'auto' },
           { effect: 'sharpen' },

@@ -45,4 +45,25 @@ export class MailService {
       return false;
     }
   }
+
+  welcomeClient(name: string, email: string, password: string) {
+    try {
+      this.logger.log('Enviando correo de bienvenida');
+      const year = new Date().getFullYear();
+      const res = this._mailerService.sendMail({
+        to: email,
+        subject: 'Bienvenido al Ecommerce',
+        template: './welcome-client',
+        context: {
+          email,
+          name,
+          year,
+          password,
+        },
+      });
+      this.logger.log(res);
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
 }

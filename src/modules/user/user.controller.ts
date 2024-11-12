@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Put,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -18,6 +19,7 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -28,6 +30,7 @@ import { UpdateUserResponseDto } from './dto/update-user-response-dto';
 import { PaginationOptions } from 'src/core/models/paginationOptions';
 import { PaginationResult } from 'src/core/models/paginationResult';
 import { CreateClientDto } from './dto/create-user-client.dto';
+import { ClientDto } from './dto/client.dto';
 
 @ApiTags('user')
 @ApiBearerAuth()
@@ -78,20 +81,18 @@ export class UserController {
   })
   @ApiOperation({ summary: 'Encontrar todos los clientes' })
   @UseGuards(JwtAuthGuard)
-  findAllClients() {
-    return this.userService.findAllClients();
+  findAllClients(@Body() options: PaginationOptions) {
+    return this.userService.findAllClients(options, true);
   }
 
-  @Get('byRole/:id')
+  @Get('client/:id')
   @ApiOkResponse({
-    type: UserDto,
-    description: 'Usuarios encontrados',
-    isArray: true,
+    description: 'Cliente encontrado',
+    type: ClientDto,
   })
-  @ApiOperation({ summary: 'Encontrar todos los usuarios por rol' })
   @UseGuards(JwtAuthGuard)
-  findAllByRole(@Param('id') id: string) {
-    return this.userService.findAllByRole(+id);
+  findOneClient(@Param('id', ParseIntPipe) id: string) {
+    return this.userService.findOneClient(+id);
   }
 
   @ApiOkResponse({
@@ -131,6 +132,24 @@ export class UserController {
     const updateUserDto: UpdateUserDto = { name: userName };
     this.userService.update(+id, updateUserDto);
     return { message: 'Usuario Actualizado' };
+  }
+
+  @Put('client/:id')
+  @ApiOkResponse({
+    description: 'Cliente Actualizado',
+    type: ClientDto,
+  })
+  @ApiOperation({ summary: 'Actualizar un cliente por su ID' })
+  @ApiBody({
+    type: CreateClientDto,
+  })
+  @ApiParam({ name: 'id', type: 'number' })
+  @UseGuards(JwtAuthGuard)
+  updateClient(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateClientDto: CreateClientDto,
+  ) {
+    return this.userService.updateClient(+id, updateClientDto);
   }
 
   @Delete(':id')

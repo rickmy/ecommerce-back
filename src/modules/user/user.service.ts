@@ -17,6 +17,8 @@ import { PaginationOptions } from 'src/core/models/paginationOptions';
 import { RoleService } from '../role/role.service';
 import { CreateClientDto } from './dto/create-user-client.dto';
 import { v4 as uuidV4 } from 'uuid';
+import { MailService } from '../mail/mail.service';
+import { ClientDto } from './dto/client.dto';
 
 @Injectable()
 export class UserService {
@@ -24,6 +26,7 @@ export class UserService {
   constructor(
     private _prismaService: PrismaService,
     private _roleService: RoleService,
+    private _mailService: MailService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserDto> {
@@ -60,7 +63,6 @@ export class UserService {
         name: newUser.name,
         lastName: newUser.lastName,
         completeName: `${newUser.name} ${newUser.lastName}`,
-        company: newUser.company,
         email: newUser.email,
         status: newUser.status,
         roleId: newUser.roleId,
@@ -72,7 +74,7 @@ export class UserService {
     }
   }
 
-  async createClient(createClientDto: CreateClientDto): Promise<UserDto> {
+  async createClient(createClientDto: CreateClientDto): Promise<ClientDto> {
     const { dni, email } = createClientDto;
     const existDni = await this.findByDni(dni);
     if (existDni)
@@ -81,8 +83,8 @@ export class UserService {
     if (existEmail)
       throw new UnprocessableEntityException('El usuario ya existe');
     const role = await this._roleService.findRoleByName('Client');
-    const password = this.hashPassword(uuidV4());
-    this.logger.log(uuidV4());
+    const uuid = uuidV4();
+    this.logger.log(uuid);
     try {
       this.logger.log('Creando usuario');
       const newUser = await this._prismaService.user.create({
@@ -92,7 +94,7 @@ export class UserService {
           dni: createClientDto.dni,
           email: createClientDto.email,
           company: createClientDto.company,
-          password,
+          password: this.hashPassword(uuid),
           phone: createClientDto.phone,
           roleId: role.id,
         },
@@ -103,14 +105,18 @@ export class UserService {
       if (!newUser)
         throw new UnprocessableEntityException('No se pudo crear el usuario');
       this.logger.log('Usuario creado');
+      this._mailService.welcomeClient(newUser.name, newUser.email, uuid);
       return {
         id: newUser.id,
         dni: newUser.dni,
         name: newUser.name,
         lastName: newUser.lastName,
-        completeName: `${newUser.name} ${newUser.lastName}`,
+        completeName: !newUser.company
+          ? `${newUser.name} ${newUser.lastName}`
+          : `${newUser.company}`,
         company: newUser.company,
         email: newUser.email,
+        phone: newUser.phone,
         status: newUser.status,
         roleId: newUser.roleId,
         role: newUser.Role.name,
@@ -232,7 +238,6 @@ export class UserService {
         name: user.name,
         lastName: user.lastName,
         completeName: `${user.name} ${user.lastName}`,
-        company: user.company,
         email: user.email,
         status: user.status,
         roleId: user.roleId,
@@ -243,36 +248,22 @@ export class UserService {
     }
   }
 
-  async findAllClients() {
+  async findAllClients(
+    options: PaginationOptions,
+    allActive?: boolean,
+  ): Promise<PaginationResult<ClientDto>> {
     try {
       const role = await this._roleService.findRoleByName('Client');
       if (!role) throw new UnprocessableEntityException('El rol no existe');
+      const { page, limit } = options;
 
-      const users = await this.findAllByRole(role.id);
-      if (!users)
-        throw new HttpException(
-          'No se encontraron usuarios',
-          HttpStatus.NO_CONTENT,
-        );
-      return users;
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
-  }
-
-  async findAllByRole(idRol: number): Promise<UserDto[]> {
-    try {
       const users = await this._prismaService.user.findMany({
         where: {
-          roleId: idRol,
+          roleId: role.id,
           status: true,
         },
         include: {
-          Role: {
-            select: {
-              name: true,
-            },
-          },
+          Role: true,
         },
       });
 
@@ -282,24 +273,70 @@ export class UserService {
           HttpStatus.NOT_FOUND,
         );
 
-      return users.map((user) => {
-        delete user.password;
+      return {
+        results: users.map((user) => {
+          return {
+            id: user.id,
+            dni: user.dni,
+            name: user.name,
+            lastName: user.lastName,
+            completeName: !user.company
+              ? `${user.name} ${user.lastName}`
+              : `${user.company}`,
+            company: user.company,
+            phone: user.phone,
+            email: user.email,
+            status: user.status,
+            roleId: user.roleId,
+            role: user.Role.name,
+          };
+        }),
+        total: await this._prismaService.user.count({
+          where: {
+            roleId: role.id,
+            status: allActive ? true : undefined,
+          },
+        }),
+        page,
+        limit,
+      };
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+  }
+
+  async findOneClient(id: number): Promise<ClientDto> {
+    return this._prismaService.user
+      .findUnique({
+        where: {
+          id,
+        },
+        include: {
+          Role: true,
+        },
+      })
+      .then((user) => {
+        if (!user)
+          throw new HttpException('El usuario no existe', HttpStatus.NOT_FOUND);
         return {
           id: user.id,
           dni: user.dni,
           name: user.name,
           lastName: user.lastName,
-          completeName: `${user.name} ${user.lastName}`,
+          completeName: !user.company
+            ? `${user.name} ${user.lastName}`
+            : `${user.company}`,
           company: user.company,
+          phone: user.phone,
           email: user.email,
           status: user.status,
           roleId: user.roleId,
           role: user.Role.name,
         };
+      })
+      .catch((error) => {
+        throw new HttpException(error.message, error.status);
       });
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.UNPROCESSABLE_ENTITY);
-    }
   }
 
   async findByEmail(email: string) {
@@ -377,6 +414,47 @@ export class UserService {
         },
       });
       return updatedUser;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+  }
+
+  async updateClient(
+    id: number,
+    createClientDto: CreateClientDto,
+  ): Promise<ClientDto> {
+    try {
+      const user = await this.findOneClient(id);
+      if (!user) throw new UnprocessableEntityException('El usuario no existe');
+      const updatedUser = await this._prismaService.user.update({
+        where: {
+          id,
+        },
+        data: {
+          name: createClientDto.name,
+          lastName: createClientDto.lastName,
+          dni: createClientDto.dni,
+          email: createClientDto.email,
+          company: createClientDto.company,
+          phone: createClientDto.phone,
+        },
+        include: { Role: true },
+      });
+      return {
+        id: updatedUser.id,
+        dni: updatedUser.dni,
+        name: updatedUser.name,
+        lastName: updatedUser.lastName,
+        completeName: !updatedUser.company
+          ? `${updatedUser.name} ${updatedUser.lastName}`
+          : `${updatedUser.company}`,
+        company: updatedUser.company,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        status: updatedUser.status,
+        roleId: updatedUser.roleId,
+        role: updatedUser.Role.name,
+      };
     } catch (error) {
       throw new HttpException(error, HttpStatus.UNPROCESSABLE_ENTITY);
     }

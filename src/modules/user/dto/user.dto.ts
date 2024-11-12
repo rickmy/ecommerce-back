@@ -12,11 +12,6 @@ export class UserDto {
   @ApiProperty({ description: 'nombre del usuario', example: 'Carlos Slim' })
   completeName: string;
   @ApiProperty({
-    description: 'nombre de la empresa del usuario',
-    example: 'Telcel',
-  })
-  company?: string;
-  @ApiProperty({
     description: 'email del usuario',
     example: 'r@yavirac.edu.ec',
   })
