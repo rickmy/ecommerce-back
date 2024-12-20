@@ -13,6 +13,11 @@ export class CategoryEntity implements Category {
     example: 'Descripción de la categoría',
     description: 'Descripción de la categoría',
   })
+  @ApiProperty({
+    example: 'https://www.google.com',
+    description: 'Imagen de la categoría',
+  })
+  image: string;
   status: boolean;
   @ApiProperty({
     example: '2021-09-01T00:00:00.000Z',

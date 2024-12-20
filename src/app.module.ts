@@ -4,11 +4,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { RoleModule } from './modules/role/role.module';
-import config from './core/config';
 import { LoggerModule } from 'nestjs-pino';
 import {
   CorrelationIdMiddleware,
@@ -23,7 +21,6 @@ import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ load: [config], isGlobal: true }),
     PrismaModule,
     AuthModule,
     UserModule,

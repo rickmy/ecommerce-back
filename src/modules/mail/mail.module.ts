@@ -10,7 +10,6 @@ import {
 import { MailService } from './mail.service';
 import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -35,7 +34,6 @@ import { ConfigService } from '@nestjs/config';
           },
         },
       }),
-      inject: [ConfigService],
     }),
   ],
   providers: [MailService],
