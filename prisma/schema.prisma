@@ -112,6 +112,7 @@ model Payment {
 
 model Category {
   id          Int           @id @default(autoincrement())
+  image       String?
   name        String
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
