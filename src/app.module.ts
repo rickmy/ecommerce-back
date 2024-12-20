@@ -18,6 +18,7 @@ import { UnauthorizedExceptionFilter } from './core/filters/UnauthorizedExceptio
 import { ProductModule } from './modules/product/product.module';
 import { CategoryModule } from './modules/category/category.module';
 import { OrderModule } from './modules/order/order.module';
+import { SettingModule } from './modules/setting/setting.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { OrderModule } from './modules/order/order.module';
     ProductModule,
     CategoryModule,
     OrderModule,
+    SettingModule,
   ],
   controllers: [AppController],
   providers: [
