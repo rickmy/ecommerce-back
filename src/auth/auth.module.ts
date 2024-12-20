@@ -4,7 +4,7 @@ import { AuthController } from './auth.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { MailModule } from 'src/modules/mail/mail.module';
 import { JwtModule } from '@nestjs/jwt';
-import config from 'src/core/config';
+import { JWT_SECRET } from 'src/core/config';
 import { PassportModule } from '@nestjs/passport';
 import { JWTstrategy } from './strategy/jwt.strategy';
 import { UserModule } from 'src/modules/user/user.module';
@@ -17,7 +17,7 @@ import { RoleModule } from 'src/modules/role/role.module';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       useFactory: () => ({
-        secret: config().jwtSecret,
+        secret: JWT_SECRET,
         signOptions: { expiresIn: '1d' },
       }),
     }),

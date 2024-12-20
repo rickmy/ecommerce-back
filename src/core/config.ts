@@ -19,3 +19,25 @@ export default () => ({
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
 });
+
+export const {
+  PORT,
+  DATABASE_URL,
+  JWT_SECRET,
+  JWT_EXPIRES_IN,
+  JWT_REFRESH_EXPIRES_IN,
+  JWT_REFRESH_SECRET,
+  URL_SUPABASE,
+  ANON_PUBLIC_KEY,
+  SERVICE_KEY,
+  PASS_SUPABASE,
+  FRONT_URL,
+  MAIL_HOST,
+  MAIL_PORT,
+  MAIL_USER,
+  MAIL_PASSWORD,
+  MAIL_FROM,
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
+} = process.env;

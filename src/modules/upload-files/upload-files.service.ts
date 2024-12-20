@@ -1,15 +1,15 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { StorageClient } from '@supabase/storage-js';
-import config from 'src/core/config';
+import { URL_SUPABASE, SERVICE_KEY } from 'src/core/config';
 import { FileNameDto } from './dto/file.dto';
 import { Response } from 'express';
 import { UploadApiResponse } from 'cloudinary';
 import { v2 } from 'cloudinary';
 @Injectable()
 export class UploadFilesService {
-  private readonly storage = new StorageClient(config().URL_SUPABASE, {
-    Authorization: `Bearer ${config().SERVICE_KEY}`,
-    apiKey: config().SERVICE_KEY,
+  private readonly storage = new StorageClient(URL_SUPABASE, {
+    Authorization: `Bearer ${SERVICE_KEY}`,
+    apiKey: SERVICE_KEY,
   });
   private readonly bucket = 'product-img';
 
